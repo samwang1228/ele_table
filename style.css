@@ -1,0 +1,143 @@
+/* Global Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Document Capture Area */
+/* Document Capture Area */
+/* Document Capture Area */
+#capture-area {
+    width: 950px;
+    /* Slightly wider */
+    height: 700px;
+    /* Increased height to contain all borders comfortably */
+    padding: 30px 60px 30px 30px;
+    /* More padding */
+    background: white;
+    color: black;
+    box-sizing: border-box;
+    /* Create the double border effect of the outer page */
+    border: 3px solid #3b82f6;
+    margin: 20px;
+    position: relative;
+    /* For absolute positioning of side text */
+    overflow: hidden;
+    /* Ensure nothing visually spills out */
+}
+
+.doc-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    padding: 10px 10px;
+}
+
+/* Side Text Container (Stubs) */
+.side-text-container {
+    position: absolute;
+    right: -55px;
+    /* Push completely outside the table */
+    top: 40px;
+    /* Adjusted up slightly as user requested */
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    /* Standard vertical stacking */
+    gap: 150px;
+    pointer-events: none;
+    /* Don't interfere with clicks */
+}
+
+.side-text-container span {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    /* Reduced sightly for tighter look */
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+}
+
+/* Title Styling */
+.doc-title {
+    font-size: 32px;
+    font-family: 'Noto Serif TC', serif;
+    margin-bottom: 2px;
+}
+
+.title-underline-double {
+    width: 200px;
+    height: 4px;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+/* Table Styling */
+.doc-table {
+    border: 2px solid black;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.doc-table td {
+    border-bottom: 1px solid black;
+}
+
+.doc-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Vertical Text Helper */
+.vertical-text-center {
+    /* writing-mode indicates vertical text, but for short 2-char words like 時間, 
+       flex-column is often safer across browsers/html2canvas if spacing is tricky.
+       Keeping writing-mode but adjusting line-height/spacing. */
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    margin: 0 auto;
+    letter-spacing: 0.3em;
+    display: inline-block;
+    /* Revert to inline-block/block from flex */
+}
+
+/* Special alignment for "Time" (時間) */
+.vertical-text-center.time-header {
+    letter-spacing: 0.4em;
+}
+
+.writing-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+}
+
+/* Checkbox imitation */
+.box {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid black;
+    margin-left: 4px;
+    vertical-align: middle;
+    position: relative;
+}
+
+.box.checked::after {
+    content: '✓';
+    position: absolute;
+    top: -6px;
+    left: -1px;
+    font-size: 18px;
+    font-weight: bold;
+}

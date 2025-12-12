@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>租車簽認單生成器</title>
+    <!-- Tailwind CSS for App UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap"
+        rel="stylesheet">
+    <!-- html2canvas -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen font-[&#39;Noto_Sans_TC&#39;] text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+
+        <!-- Input Panel -->
+        <div class="w-full lg:w-1/3 bg-white rounded-2xl shadow-xl p-6 overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span>📝 填寫資料</span>
+            </h2>
+
+            <form id="rentalForm" class="space-y-5">
+                <!-- Company/Client -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-600">公司 / 客戶名稱</label>
+                    <input type="text" id="clientName" value="穩得"
+                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                        placeholder="輸入名稱">
+                </div>
+
+                <!-- Date -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">年</label>
+                        <input type="number" id="year" value="114"
+                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">月</label>
+                        <input type="number" id="month" value="12"
+                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">日</label>
+                        <input type="number" id="day" value="9"
+                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Time -->
+                <div class="border-t pt-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-2">時間 (由)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="startHour" value="05" placeholder="時"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="number" id="startMin" value="20" placeholder="分"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <label class="block text-sm font-medium text-gray-600 my-2">至</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="endHour" placeholder="時"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="number" id="endMin" placeholder="分"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <label class="block text-sm font-medium text-gray-600 my-2">共計</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="totalHour" placeholder="時"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="number" id="totalMin" placeholder="分"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Itinerary -->
+                <div class="space-y-2 border-t pt-4">
+                    <label class="block text-sm font-medium text-gray-600">行程內容</label>
+                    <textarea id="itinerary" rows="4"
+                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none custom-scrollbar"
+                        placeholder="輸入行程細節...">穩得 05:20(Justin 徐先生 0930-378-880)(1位+1行李)
+新北市汐止區汐錠路16-1巷18號→送桃機一航(CI-160/07:50)</textarea>
+                </div>
+
+                <!-- Car Type -->
+                <div class="space-y-2 border-t pt-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-2">車輛種類</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="checkImport"
+                                class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                            <span>進口車</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="checkDomestic"
+                                class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                            <span>國產車</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="checkSeat"
+                                class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                            <span>人座</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-600">車號</label>
+                    <input type="text" id="carNumber" value="RFR-6171"
+                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-600">駕駛</label>
+                    <input type="text" id="driver" value="蘇士程"
+                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <!-- Payment -->
+                <div class="space-y-2 border-t pt-4">
+                    <div class="grid grid-cols-2 gap-2 items-center">
+                        <span class="text-sm font-medium">基本小時 $</span>
+                        <input type="text" id="baseCost"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 items-center">
+                        <span class="text-sm font-medium">超時小時 $</span>
+                        <input type="text" id="overtimeCost"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 items-center">
+                        <span class="text-sm font-medium font-bold">總計 NT$</span>
+                        <input type="text" id="totalCost"
+                            class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold">
+                    </div>
+                </div>
+
+
+                <div class="pt-6">
+                    <button type="button" onclick="generateImage()"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform transition hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-2">
+                        <span>⬇️ 下載圖片</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preview Panel -->
+        <div
+            class="w-full lg:w-2/3 flex flex-col items-center justify-start bg-gray-200/50 rounded-2xl p-4 lg:p-8 overflow-auto">
+            <div class="mb-4 text-gray-500 font-medium text-sm">預覽 (將生成此畫面)</div>
+
+            <!-- Exact Document Template -->
+            <div id="capture-area" class="bg-white shadow-2xl relative">
+                <!-- Outer Border Container -->
+                <div class="doc-container">
+
+                    <!-- Title -->
+                    <h1 class="text-center font-bold tracking-widest doc-title">租車簽認單</h1>
+                    <div class="title-underline-double mx-auto"></div>
+
+                    <!-- Header Values -->
+                    <div class="flex justify-between items-end mt-4 mb-1 px-1">
+                        <div class="flex items-end text-xl">
+                            <span class="font-bold font-serif tracking-widest mr-2">公司/客戶名稱</span>
+                            <span id="preview-clientName"
+                                class="border-b-2 border-black min-w-[200px] text-center px-2 pb-1 font-medium"></span>
+                        </div>
+                        <div class="flex items-end text-xl font-bold font-serif tracking-widest">
+                            <span id="preview-year" class="px-2"></span>年
+                            <span id="preview-month" class="px-2"></span>月
+                            <span id="preview-day" class="px-2"></span>日
+                        </div>
+                    </div>
+
+                    <!-- Main Table -->
+                    <table class="w-full border-collapse doc-table">
+                        <!-- Row 1: Time Header -->
+                        <tr class="h-14">
+                            <td class="w-14 text-center font-serif text-xl border-r border-black relative">
+                                <span class="vertical-text-center time-header">時間</span>
+                            </td>
+                            <td colspan="4" class="border-r border-black p-0">
+                                <div class="flex justify-between items-center h-full px-4 text-xl font-serif">
+                                    <div class="flex items-center"><span id="preview-startHour"
+                                            class="mx-2 font-sans font-normal"></span> 時</div>
+                                    <div class="flex items-center"><span id="preview-startMin"
+                                            class="mx-2 font-sans font-normal"></span> 分至</div>
+                                    <div class="flex items-center"><span id="preview-endHour"
+                                            class="mx-2 font-sans font-normal"></span> 時</div>
+                                    <div class="flex items-center"><span id="preview-endMin"
+                                            class="mx-2 font-sans font-normal"></span> 分</div>
+                                </div>
+                            </td>
+                            <td class="w-12 text-center font-serif text-xl border-r border-black">共計</td>
+                            <td class="border-black">
+                                <div class="flex justify-around items-center text-xl font-serif">
+                                    <div><span id="preview-totalHour" class="mx-1 font-sans font-normal"></span> 時</div>
+                                    <div><span id="preview-totalMin" class="mx-1 font-sans font-normal"></span> 分</div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Itinerary -->
+                        <tr class="h-48">
+                            <td class="text-center font-serif text-xl border-r border-black relative">
+                                <span class="vertical-text-center">行程</span>
+                            </td>
+                            <td colspan="6" class="align-top p-3 text-lg font-bold leading-relaxed whitespace-pre-wrap"
+                                id="preview-itinerary">
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Car Type / Driver -->
+                        <tr class="h-24">
+                            <!-- Car Type Label -->
+                            <td class="h-24 text-center font-serif text-xl border-r border-black relative w-14 p-0">
+                                <div class="vertical-text-center h-full flex flex-col justify-center items-center"
+                                    style="letter-spacing: 0.1em; line-height: 1.2;">
+                                    車輛<br>種類</div>
+                            </td>
+                            <!-- Car Type Checkboxes -->
+                            <td class="h-24 border-r border-black w-36 p-0 align-middle">
+                                <div
+                                    class="h-full flex flex-col justify-center pl-3 text-lg font-bold font-serif space-y-1">
+                                    <div class="flex items-center">進口車<span class="box ml-1"
+                                            id="preview-checkImport"></span></div>
+                                    <div class="flex items-center">國產車<span class="box ml-1"
+                                            id="preview-checkDomestic"></span></div>
+                                    <div class="flex items-center">人座<span class="box ml-1"
+                                            id="preview-checkSeat"></span></div>
+                                </div>
+                            </td>
+                            <!-- Label: Car No / Driver -->
+                            <td class="h-24 w-10 border-r border-black p-0">
+                                <div class="flex flex-col h-full font-serif text-sm">
+                                    <div class="flex-1 w-full border-b border-black flex items-center justify-center">
+                                        <div class="text-center leading-tight">車<br>號</div>
+                                    </div>
+                                    <div class="flex-1 w-full flex items-center justify-center">
+                                        <div class="text-center leading-tight">駕<br>駛</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- Value: Car No / Driver -->
+                            <td class="h-24 w-48 border-r border-black p-0">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex-1 w-full border-b border-black flex items-center pl-4 text-xl font-bold"
+                                        id="preview-carNumber"></div>
+                                    <div class="flex-1 w-full flex items-center pl-4 text-xl font-bold"
+                                        id="preview-driver">
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- Label: Basic / Overtime -->
+                            <td class="h-24 w-10 border-r border-black p-0">
+                                <div class="flex flex-col h-full font-serif text-lg">
+                                    <div class="flex-1 w-full border-b border-black flex items-center justify-center">
+                                        <div class="text-center leading-tight">基<br>本</div>
+                                    </div>
+                                    <div class="flex-1 w-full flex items-center justify-center">
+                                        <div class="text-center leading-tight">超<br>時</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- Value: Basic / Overtime -->
+                            <td colspan="2" class="h-24 p-0">
+                                <div class="flex flex-col h-full">
+                                    <div
+                                        class="flex-1 w-full border-b border-black flex items-center justify-end pr-4 text-xl font-serif">
+                                        小 時 $ <span id="preview-baseCost"
+                                            class="ml-2 w-16 text-center font-sans font-bold"></span>
+                                    </div>
+                                    <div class="flex-1 w-full flex items-center justify-end pr-4 text-xl font-serif">
+                                        小 時 $ <span id="preview-overtimeCost"
+                                            class="ml-2 w-16 text-center font-sans font-bold"></span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Row 4: Signature / Totals -->
+                        <tr class="h-32">
+                            <td class="h-32 text-center font-serif text-xl border-r border-black relative w-14 p-0">
+                                <div class="vertical-text-center h-full flex flex-col justify-center items-center"
+                                    style="letter-spacing: 0.1em; line-height: 1.2;">
+                                    顧客<br>簽名</div>
+                            </td>
+                            <td colspan="3" class="h-32 align-top p-2 border-r border-black relative">
+                                <span
+                                    class="italic font-serif text-xl text-gray-700 absolute top-2 left-2">SIGNATURE</span>
+                            </td>
+                            <!-- Label: Rent / Remarks -->
+                            <td class="h-32 w-8 border-r border-black p-0">
+                                <div class="flex flex-col h-full font-serif text-lg">
+                                    <div class="flex-1 w-full border-b border-black flex items-center justify-center">
+                                        <div class="text-center leading-tight">租<br>金</div>
+                                    </div>
+                                    <div class="flex-1 w-full flex items-center justify-center">
+                                        <div class="text-center leading-tight">備<br>註</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- Value: Total / Remarks -->
+                            <td colspan="2" class="h-32 p-0">
+                                <div class="flex flex-col h-full">
+                                    <div
+                                        class="flex-1 w-full border-b border-black flex items-center pl-2 text-xl font-serif">
+                                        <span class="text-lg font-bold leading-none mr-2">總計</span>
+                                        <span class="text-2xl font-bold italic mr-1">NT$</span>
+                                        <span id="preview-totalCost" class="text-2xl font-bold italic"></span>
+                                    </div>
+                                    <div class="flex-1 w-full flex items-center pl-2">
+                                        <!-- Remarks -->
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </table>
+
+                    <!-- Side Text (Absolute positioned relative to doc-container) -->
+                    <div class="side-text-container">
+                        <span>存根聯 ︵白︶</span>
+                        <span>客戶聯 ︵紅︶</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
