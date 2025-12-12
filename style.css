@@ -122,22 +122,4 @@
     text-orientation: upright;
 }
 
-/* Checkbox imitation */
-.box {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 1px solid black;
-    margin-left: 4px;
-    vertical-align: middle;
-    position: relative;
-}
-
-.box.checked::after {
-    content: '✓';
-    position: absolute;
-    top: -6px;
-    left: -1px;
-    font-size: 18px;
-    font-weight: bold;
-}
+/* Checkbox imitation - REMOVED (Switched to Unicode chars ☐/☑) */

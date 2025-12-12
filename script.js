@@ -35,11 +35,11 @@ function updatePreview() {
         const input = document.getElementById(id);
         const preview = document.getElementById(`preview-${id}`);
         if (input && preview) {
-            if (input.checked) {
-                preview.classList.add('checked');
-            } else {
-                preview.classList.remove('checked');
-            }
+            // Use unicode characters instead of CSS styling for reliable rendering
+            preview.textContent = input.checked ? '☑' : '☐';
+            // Ensure font size and alignment matches text
+            preview.style.fontSize = '1.2em';
+            // Reset excessive scaling if previously applied, or keep generic styling
         }
     });
 }
