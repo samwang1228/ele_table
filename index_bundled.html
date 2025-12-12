@@ -13,7 +13,132 @@
         rel="stylesheet">
     <!-- html2canvas -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Global Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Document Capture Area */
+        #capture-area {
+            width: 950px;
+            /* Slightly wider */
+            height: 700px;
+            /* Increased height to contain all borders comfortably */
+            padding: 30px 60px 30px 30px;
+            /* More padding */
+            background: white;
+            color: black;
+            box-sizing: border-box;
+            /* Create the double border effect of the outer page */
+            border: 3px solid #3b82f6;
+            margin: 20px;
+            position: relative;
+            /* For absolute positioning of side text */
+            overflow: hidden;
+            /* Ensure nothing visually spills out */
+        }
+
+        .doc-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            padding: 10px 10px;
+        }
+
+        /* Side Text Container (Stubs) */
+        .side-text-container {
+            position: absolute;
+            right: -55px;
+            /* Push completely outside the table */
+            top: 40px;
+            /* Adjusted up slightly as user requested */
+            width: 30px;
+            display: flex;
+            flex-direction: column;
+            /* Standard vertical stacking */
+            gap: 150px;
+            pointer-events: none;
+            /* Don't interfere with clicks */
+        }
+
+        .side-text-container span {
+            font-family: 'Noto Serif TC', serif;
+            font-size: 14px;
+            letter-spacing: 0.2em;
+            /* Reduced sightly for tighter look */
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+        }
+
+        /* Title Styling */
+        .doc-title {
+            font-size: 32px;
+            font-family: 'Noto Serif TC', serif;
+            margin-bottom: 2px;
+        }
+
+        .title-underline-double {
+            width: 200px;
+            height: 4px;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+
+        /* Table Styling */
+        .doc-table {
+            border: 2px solid black;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .doc-table td {
+            border-bottom: 1px solid black;
+        }
+
+        .doc-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Vertical Text Helper */
+        .vertical-text-center {
+            /* writing-mode indicates vertical text, but for short 2-char words like 時間, 
+            flex-column is often safer across browsers/html2canvas if spacing is tricky.
+            Keeping writing-mode but adjusting line-height/spacing. */
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            margin: 0 auto;
+            letter-spacing: 0.3em;
+            display: inline-block;
+            /* Revert to inline-block/block from flex */
+        }
+
+        /* Special alignment for "Time" (時間) */
+        .vertical-text-center.time-header {
+            letter-spacing: 0.4em;
+        }
+
+        .writing-vertical {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+        }
+
+        /* Checkbox imitation - REMOVED (Switched to Unicode chars ☐/☑) */
+    </style>
 </head>
 
 <body class="bg-gray-100 min-h-screen font-[&#39;Noto_Sans_TC&#39;] text-gray-800">
@@ -341,7 +466,109 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Link input IDs to Preview IDs
+        const bindings = [
+            'clientName', 'year', 'month', 'day',
+            'startHour', 'startMin', 'endHour', 'endMin', 'totalHour', 'totalMin',
+            'carNumber', 'driver',
+            'baseCost', 'overtimeCost', 'totalCost'
+        ];
+
+        // Special handling for content that needs processing
+        const specialBindings = {
+            'itinerary': (val) => val, // Textarea preserves newlines via CSS
+        };
+
+        const checkboxes = ['checkImport', 'checkDomestic', 'checkSeat'];
+
+        function updatePreview() {
+            // Standard Text Inputs
+            bindings.forEach(id => {
+                const input = document.getElementById(id);
+                const preview = document.getElementById(`preview-${id}`);
+                if (input && preview) {
+                    preview.textContent = input.value;
+                }
+            });
+
+            // Textarea
+            const itineraryInput = document.getElementById('itinerary');
+            const itineraryPreview = document.getElementById('preview-itinerary');
+            if (itineraryInput && itineraryPreview) {
+                itineraryPreview.textContent = itineraryInput.value;
+            }
+
+            // Checkboxes
+            checkboxes.forEach(id => {
+                const input = document.getElementById(id);
+                const preview = document.getElementById(`preview-${id}`);
+                if (input && preview) {
+                    // Use unicode characters instead of CSS styling for reliable rendering
+                    preview.textContent = input.checked ? '☑' : '☐';
+                    // Ensure font size and alignment matches text
+                    preview.style.fontSize = '1.2em';
+                    // Reset excessive scaling if previously applied, or keep generic styling
+                }
+            });
+        }
+
+        // Attach Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', updatePreview);
+                input.addEventListener('change', updatePreview);
+            });
+
+            // Initial update
+            updatePreview();
+        });
+
+        function generateImage() {
+            const btn = document.querySelector('button[onclick="generateImage()"]');
+            const originalText = btn.innerHTML;
+
+            // 1. Visual Feedback
+            btn.innerHTML = '<span>⏳ 處理中...</span>';
+            btn.disabled = true;
+
+            // 2. Library Check
+            if (typeof html2canvas === 'undefined') {
+                alert('錯誤：無法載入圖片生成工具 (html2canvas)。\n請檢查您的網路連線，或嘗試使用截圖功能。');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            const element = document.getElementById('capture-area');
+
+            // 3. Execution
+            html2canvas(element, {
+                scale: 2, // High resolution
+                backgroundColor: null,
+                useCORS: true,
+                logging: true, // Enable logs for debugging
+            }).then(canvas => {
+                // Create download link
+                const link = document.createElement('a');
+                link.download = `租車簽認單_${document.getElementById('clientName').value || '未命名'}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                // Reset button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error('Image generation failed:', err);
+                alert('圖片生成失敗，可能的安全限制。\n建議直接使用電腦的截圖工具 (Win+Shift+S)。\n錯誤訊息: ' + err.message);
+
+                // Reset button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+    </script>
 </body>
 
 </html>

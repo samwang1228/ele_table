@@ -57,18 +57,45 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function generateImage() {
+    const btn = document.querySelector('button[onclick="generateImage()"]');
+    const originalText = btn.innerHTML;
+
+    // 1. Visual Feedback
+    btn.innerHTML = '<span>⏳ 處理中...</span>';
+    btn.disabled = true;
+
+    // 2. Library Check
+    if (typeof html2canvas === 'undefined') {
+        alert('錯誤：無法載入圖片生成工具 (html2canvas)。\n請檢查您的網路連線，或嘗試使用截圖功能。');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        return;
+    }
+
     const element = document.getElementById('capture-area');
 
-    // Use html2canvas
+    // 3. Execution
     html2canvas(element, {
         scale: 2, // High resolution
         backgroundColor: null,
-        useCORS: true
+        useCORS: true,
+        logging: true, // Enable logs for debugging
     }).then(canvas => {
         // Create download link
         const link = document.createElement('a');
         link.download = `租車簽認單_${document.getElementById('clientName').value || '未命名'}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
+
+        // Reset button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }).catch(err => {
+        console.error('Image generation failed:', err);
+        alert('圖片生成失敗，可能的安全限制。\n建議直接使用電腦的截圖工具 (Win+Shift+S)。\n錯誤訊息: ' + err.message);
+
+        // Reset button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     });
 }
